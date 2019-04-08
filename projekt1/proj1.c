@@ -3,7 +3,7 @@
  * Projekt c. 1 - Prace s textem
  * Autor: Marek Ziska, xziska03@stud.fit.vutbr.cz
  * Skupina: 1BIB
- * Datum 4.11.2018
+ * Datum 4.11.2018 
  *
  * Popis programu: Program funguje ako textovy editor. Editor nebude interaktivny, 
  *				   tj. nebude komunikovat s uzivatelom, ale prikazy pre upravu textu 
