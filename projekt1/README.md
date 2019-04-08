@@ -48,11 +48,17 @@ PRIKLAD VYSTUPOV
 
 1)
 $ cat mkcsv.txt
+
 a,
+
 r
+
 n
+
 n
+
 g1
+ 
  
 $ cat vstup
 
