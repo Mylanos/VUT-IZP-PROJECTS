@@ -35,63 +35,40 @@ PRIKLAD VYSTUPOV
 
    1)
      $ cat mkcsv.txt
-
       a,
-
       r
-
       n
-
       n
-
       g1
  
  
     $ cat vstup
-
       Jmeno pacienta
-
       rok narozeni
-
       Antonin Jedlicka
-
       1963
-
       Alzbeta Jedla
-
       1965
 
  
     $ ./proj1 mkcsv.txt <vstup
-
       Jmeno pacienta,rok narozeni
-
       Antonin Jedlicka,1963
-
       Alzbeta Jedla,1965
 
   2)
 
     $ cat tabular.txt
-
       b| 
-
       a |
-
       n
-
       g1
 
- 
     $ cat vstup
-
       Toto je
-
       nejaky soubor
  
     $ ./proj1 tabular.txt <vstup
-
       | Toto je |
-
       | nejaky soubor |
 
