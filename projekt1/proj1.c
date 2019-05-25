@@ -12,9 +12,7 @@
  *				   vzdy len s jednym riadkom.
  *				   
  * Obsah programu: Program obsahuje vsetky povinne prikazy a obsahuje aj jeden nepovinny prikaz - appendEOL
- *
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,77 +25,171 @@
 #define EXIT_SUCCES 0
 
 /*----------------------------------PROTOTYPES---------------------------------------*/
+/**
+ * [funkcia zatvori subor s prikazmy a skontroluje ci sa zatvorili spravne]
+ * @param subPrikazy [subor s prikazmy]
+ */
 void closeCommandFile(FILE** subPrikazy);
+
+/**
+ * [nacita aktualny riadok z INPUTU]
+ * @param line [string na ulozenie riadka]
+ */
 void getLine(char *line);
+
+/**
+ * [funkcia otvori subor s prikazmy]
+ * @param argument1  [description]
+ * @param subPrikazy [description]
+ */
 void openCommandFile(char *argument1, FILE** subPrikazy);
+
+/**
+ * [nacita retazec z jednoho do druheho tak ze v druhom nenacita prvy znak]
+ * @param content [upraveny string(destination)]
+ * @param string  [upravovany string(source)]
+ */
 void removeCommandChar(char *content, char *string);
+
+/**
+ * [vytlaci CONTENT z prikazoveho suboru na jeden riadok]
+ * @param string [cielovy retazec]
+ */
 void insertContent(char *string);
+
+/**
+ * [vytlaci CONTENT z prikazoveho subora pred aktualny riadok]
+ * @param string [string pred upravou]
+ * @param line   [string po uprave]
+ */
 void beforeContent(char *string, char *line);
+
+/**
+ * [zistuje ci v stringu su len cisla]
+ * @param  string [description]
+ * @return        [(-1) - ak najde inky znak ako cislo, (hodnota) - prevedene cislo z stringu]
+ */
 int isItNumber(char *string);
+
+/**
+ * [kontrola ci sa nieco nachadza v stringu]
+ * @param  string [kontrolovany retazec]
+ * @return        [false - ak v stringu nic nieje, true - ak v stringu nieco je]
+ */
 bool isEmpty(char *string);
+
+/**
+ * [precitanie stringu bez EOL zo stdin, pripaja na koniec string z prikazoveho subora(CONTENT)]
+ * @param content [riadok s prikazom a s CONTENTOM]
+ * @param line    [upraveny riadok s CONTENTOM]
+ */
 void appendContent(char *content, char *line);
+
+/**
+ * [nacitava riadok z prikazoveho subora bez EOL]
+ * @param array      [vytiahnuty string (CONTENT)]
+ * @param subPrikazy [subor s prikazmy]
+ */
 void getContent(char *array, FILE** subPrikazy);
+
+/**
+ * [odstrani EOL na aktualnom riadku]
+ * @param line [upravovany aktualny riadok]
+ */
 void removeEOL(char *line);
+
+/**
+ * [nacita riadok z stdin ale nevytlaci ho(vymaze sa)]
+ * @param n    [pocet riadkov na vymazanie]
+ * @param line [aktualny riadok]
+ */
 void delete(int n, char *line);
+
+/**
+ * [tlaci 'n' aktualnych riadok]
+ * @param n    [pocet riadkov]
+ * @param line [aktualny riadok]
+ */
 void next(int n, char *line);
+
+/**
+ * [prida na aktualny riadok EOL]
+ * @param line [aktualny riadok]
+ */
 void appendEOL(char *line);
+
+/**
+ * [funkcia "substitution" pracuje pre prikazy s a S. V pripade prikazu "s" hlada v aktualnom
+   riadku jeden retazec "CONTENT" ak ho najde nahradi ho s "REPLACEMENT" Prikaz "S" pracuje
+   analogicky ako u prikazu "s", len substituciu vykonava pre vsetky vyskyty "CONTENT"]
+ * @param string [description]
+ * @param line   [description]
+ */
 void substitution(char *string, char *line);
+
+/**
+ * [vykonava prikazy ktore boli zadane v prikazovom subore]
+ * @param contentArray [2d pole textu z upravovaneho subora]
+ */
 void commandExecution(char contentArray[MAXline][MAXchar]);
+
+/**
+ * [funkcia vytlaci napovedu]
+ */
 void help();
 /*----------------------------------PROTOTYPES---------------------------------------*/
 
 /*-------------------------------------MAIN------------------------------------------*/
+/**
+ * [kontorla argumentov, praca so suborom, volanie prikazov]
+ * @param  argc [pocet argumentov]
+ * @param  argv [pointer na argumenty]
+ * @return      [EXIT_FAILURE(1) - chyba, EXIT_SUCCES(0) - uspech]
+ */
 int main(int argc, char *argv[])
 {
-	FILE *subPrikazy;				//pointer na FILE s prikazmy
-
-	char choice; 					//charakter pre volanie napovedy
-	int c;							//integer na nacitanie znakov z prik. subora		
-	int numberOfCommand = 0;		//inicializovany int na inkrementaciu v cykle
+	FILE *subPrikazy;
+	char choice; 							//napovedy
+	int c;									//nacitanie znakov z prik. subora		
+	int numberOfCommand = 0;				//inkrementacia v cykle
 	char contentArray[MAXline][MAXchar];	//2d pole do ktoreho sa uklada subor s prikazmy
 
-/*test ci bolo zadanych malo argumentov
- */
-	if (argc < 2) {
+	if (argc < 2)	/*malo argumentov*/
+	{		
 		fprintf(stderr, "Zadali ste malo argumentov: Pre spravne fungovanie programu si precitajte napovedu\n"
 						"Chcete otvorit napovedu? (y/n)\n");
-		scanf("%c", &choice);
-		if(choice == 'y'){
-			help();			//NAJVACSI BULLSHIT CO SOM MOHOL SPRAVIT
+		scanf(" %c", &choice);
+		if(choice == 'y')
+		{
+			help();
 			return EXIT_FAILURE;
 		}
-		else { 
+		else 
 			return EXIT_FAILURE;
-		}
 	}
-/*test ci bol zadany spravny pocet argumentov*/
-	else if (argc == 2) {
-/*funkcia na otvorenie suboru s prikazmy
- */
-		openCommandFile(argv[1], &subPrikazy);	
-
-/*cyklus nacitava charaktery zo suboru s prikazmy a nacitava ich do 
- *2d arrayu a prikazy si ulozim do prveho indexu 2d pola
- */
-		while((c = getc(subPrikazy)) != EOF){
+	else if (argc == 2)	/*zadany spravny pocet argumentov*/
+	{
+		openCommandFile(argv[1], &subPrikazy);	/*funkcia na otvorenie suboru s prikazmy*/
+		while((c = getc(subPrikazy)) != EOF)	/*cyklus nacitava charaktery zo suboru s prikazmy a nacitava ich do */
+		{										/*2d arrayu prikazy uklada do prveho indexu 2d pola*/
 			contentArray[numberOfCommand][0] = c;
 			getContent(contentArray[numberOfCommand], &subPrikazy);
-			if(numberOfCommand < MAXline){
+			if(numberOfCommand < MAXline)
+			{
 				numberOfCommand++;
 			}
-			else{
+			else
+			{
 				fprintf(stderr, "Zadali ste prilis  vela prikazov, program podporuje len 100 prikazov\n");
 				return EXIT_FAILURE;
 			}
 		}
 	
 	closeCommandFile(&subPrikazy);
-/*vykonanie prikazov
- */
-	commandExecution(contentArray);
+	commandExecution(contentArray);		/*vykonanie prikazov*/
 
 	}
-/*test ci bolo zadanych prilis vela argumentov*/
+	/*test ci bolo zadanych prilis vela argumentov*/
 	else {
 		fprintf(stderr,"Zadali ste prilis vela argumentov: Pre spravne fungovanie program si precitajte napovedu\n"
 					   "Chcete otvorit napovedu? (y/n)\n");
@@ -115,130 +207,117 @@ return EXIT_SUCCES;
 }
 /*-------------------------------------MAIN------------------------------------------*/
 
-
 /*-----------------------------------FUNCTIONS---------------------------------------*/
-/*funkcia zatvori subor s prikazmy a skontroluje ci sa zatvorili spravne
- */
-void closeCommandFile(FILE** subPrikazy) {
-    if (fclose(*subPrikazy) == EOF) {
+
+void closeCommandFile(FILE** subPrikazy)
+{
+    if (fclose(*subPrikazy) == EOF)
+    {
         fprintf(stderr, "Subor s prikazmy sa nepodarilo zatvorit\n");
         exit(1);
     }
-    else{
-		return;
-    }
+	return;
 }	
 
-/*funkcia "getLine" nacita aktualny riadok z INPUTU
- */
 void getLine(char *line) {
-	int i = 0; 			//int na inkrementaciu
-	int c;				//int na nacitanie charakterov
-/*cyklus nacitava charaktery zo stdinputu a uklada ich do retazca "line"
- */
-	while((c = fgetc(stdin)) != '\n') {
-		if (c == EOF) {
+	int i = 0; 			
+	int c;				//nacitanie charov
+
+	while((c = fgetc(stdin)) != '\n')	/*cyklus nacitava charaktery zo stdin a uklada do retazca "line"*/
+	{
+		if (c == EOF)
+		{
 			exit(1);
 		}
 		line[i] = c;
 		i++;
 	}
-/*posledny charakter v retazci sa musi ukoncit s '\0' 
- */
-	line[i] = '\0';
+	line[i] = '\0';		/*posledny char v retazci mus byt '\0' */
 	return;
 }
 
-/*funkcia otvori subor s prikazmy
- */
-void openCommandFile(char *argument1, FILE** subPrikazy) {
+void openCommandFile(char *nazovSubora, FILE** subPrikazy)
+{
 	char choice;	//znak na zobrazenie napovedy
-	if((*subPrikazy = fopen(argument1, "r")) == NULL){
-			fprintf(stderr, "Subor s prikazmy sa nepodarilo otvorit\n"
-						    "Chcete otvorit napovedu? (y/n)\n");
+	if((*subPrikazy = fopen(nazovSubora, "r")) == NULL)
+	{
+		fprintf(stderr, "Subor s prikazmy sa nepodarilo otvorit\n"
+						"Chcete otvorit napovedu? (y/n)\n");
 		scanf("%c", &choice);
-		if(choice == 'y'){
+		if(choice == 'y')
+		{
 			help();
 			exit(1);
 		}
-		else { 
+		else
+		{ 
 			exit(1);
 		}
 	}
 	return;
 }
 
-/*pomocna funkcia k isitnumber "removeCommandChar" sluzi na nacitanie retazca z 
- *jednoho do druheho tak ze v druhom nenacita prvy znak
- */
-void removeCommandChar(char *content, char *string) {
+void removeCommandChar(char *content, char *string)
+{
 	unsigned i;				//unsigned pretoze porovnavame s tym strlen
-/*v cykluse sa zbavime prveho znaku v retazci - teda toho prikazu*/
-	for(i = 1; i < (strlen(string)); i++){
+
+	for(i = 1; i < (strlen(string)); i++)
+	{
 		content[i - 1] = string[i];
 	}
 	return;
 }
 
-/*funkcia "insertContent" sluzi na vytlacenie CONTENTu z prikazoveho
- *suboru na jeden riadok
- */
-void insertContent(char *string){
+void insertContent(char *string)
+{
 	char content[MAXchar];		//array pre nacitanie CONTENTU bez prikazu
-	int count = 0;				//pocet charakterov
-/*volame funkciu na zbavenie sa prveho znaku a pomocou funckie strlen zistime 
- *dlzku retazca a na koniec dame '\0' aby nam nevznikali chyby, nasledne
- */
-	removeCommandChar(content, string);
-	count = strlen(content);
-	content[count] = '\0';
+	int length = 0;				//pocet charakterov
+
+	removeCommandChar(content, string);	/*odstrani prvy znak*/
+	length = strlen(content);
+	content[length] = '\0';
 	puts(content);
 	return;
 }
 
-/*funkcia "beforeContent" sluzi na vytlacenie CONTENTu z prikazoveho
- *subora pred aktualny riadok
- */
-void beforeContent(char *string, char *line) { 
+void beforeContent(char *string, char *line)
+{ 
 	char editedArray[MAXchar] = {'\0'};		//pomocna array na nacitanie upraveneho stringu
-	int count;							//pocet charakterov v editedArray
-	unsigned totalLineLength, i;		//dlzky stringov
+	int count;								//pocet charakterov v editedArray
+	unsigned totalLineLength, i;			//dlzky stringov
 
-/*zbavime sa prveho znaku z prikazoveho riadka a znova ho ukoncime s '\0',
- *nasledne sa zistime dlzku riadka s CONTENTOM a s riadkom z stdinu 
- *ak tato dlzka bude viac ako 1000 znakov vyhodi nam chybu, inak pred aktualny riadok
- *pripojime CONTENT, v cykle sa nam prehodia znaky z editedArray do aktualneho riadka
- */
-	removeCommandChar(editedArray, string);
+	removeCommandChar(editedArray, string);	/*zbavime sa prveho znaku z prikazoveho riadka a znova ho ukoncime s '\0'*/
 	count = strlen(editedArray);
 	editedArray[count] = '\0';
-	totalLineLength = ((strlen(editedArray)) + (strlen(line)));
+	totalLineLength = ((strlen(editedArray)) + (strlen(line)));	/*vysledna dlzka riadka po uprave*/
 
-	if(totalLineLength < MAXchar){
-		strcat(editedArray, line);
-		for(i = 0; i <= totalLineLength; i++){
-			line[i] = editedArray[i];
+	if(totalLineLength < MAXchar)
+	{
+		strcat(editedArray, line);		/*pripojime CONTENT*/
+		for(i = 0; i <= totalLineLength; i++)
+		{
+			line[i] = editedArray[i];	/*prehodime znaky z editedArray do aktualneho riadka*/
 		}
 	}
-	else{
+	else
+	{
 		fprintf(stderr, "V prikaze nastala chyba: Vysledny riadok obsahoval prilis vela znakov\n");
 		exit(1);
 	}
 	return;
 }
 
-/*funkcia "isItNumber" zistuje ci v stringu su len cisla ak najde iny znak
- *vracia chybu ak tam cislo je tak funkcia ho prehodi z stringu na integer
- *a vraziu tuto hodnotu
- */
-int isItNumber(char *string) {
+int isItNumber(char *string)
+{
 	char contentArray[MAXchar];	//array len na nacitanie CONTENTU	
 	int value;					//hodnota cisla za prikazom
 	unsigned i;					//porovnanie s dlzkou stringu
 	char *ptr;					//pomocny pointer pre funkciu strtol
 
-	for(i = 1; i < strlen(string); i++){
-		if(!isdigit(string[i])){
+	for(i = 1; i < strlen(string); i++)
+	{
+		if(!isdigit(string[i]))
+		{
 			return -1;
 		}
 	}
@@ -247,10 +326,8 @@ int isItNumber(char *string) {
 	return value;
 }
 
-/*funkcia "isEmpty" sluzi na zistenie ci v stringu nieco je
- *je ak tam nic nieje funkcia vracia false naopak zase true
- */
-bool isEmpty(char *string) {
+bool isEmpty(char *string)
+{
 	unsigned i;		//porovnanie s dlzkou stringu
 
 	for (i = 1; i < strlen(string); i++) {
@@ -261,40 +338,38 @@ bool isEmpty(char *string) {
 	return true;
 }
 
-/*funkcia appendContent sluzi na precitanie stringu bez EOL zo stdin 
- *a pripojenie na jeho koniec string z prikazoveho subora(CONTENT)
- */
-void appendContent(char *content, char *line) { 
+void appendContent(char *content, char *line)
+{ 
 	char contentArray[MAXchar] = {'\0'};				//array lem na nacitanie CONTENTU
 	removeCommandChar(contentArray, content);
 
-/*znova zistuje ci nie je finalna dlzka vacsia ako 1000 ak nie je napoji CONTENT 
- *na koniec aktualneho riadka
- */
-	if((strlen(line)+(strlen(contentArray))) < MAXchar){ 
+	if((strlen(line)+(strlen(contentArray))) < MAXchar)	/*ak je dlzka upraveneho riadka mensia ako 1000 napoji CONTENT na koniec aktualneho riadka */
+	{ 	
 		strcat(line, contentArray);
 	}
-	else{
+	else
+	{
 		fprintf(stderr, "V prikaze nastala chyba: Vysledny riadok bol prilis dlhy!\n");
 		exit(1);
 	}
 	return;
 }
 
-/*funkcia "getContent" sluzi na nacitanie 1 celeho stringu z prikazoveho
- *subora ale bez EOL, funkcia kontroluje ci riadok nie je prilis dlhy
- */
-void getContent(char *array, FILE** subPrikazy) {
+void getContent(char *array, FILE** subPrikazy)
+{
 	int c;			//sluzi na nacitanie charakterov z prik. subora
 	int i = 1;		//int na inkrementaciu
 
-	while((c = getc(*subPrikazy)) != '\n' && c != EOF) {
+	while((c = getc(*subPrikazy)) != '\n' && c != EOF)
+	{
 
-		if(i < MAXchar) {
+		if(i < MAXchar)
+		{
 			array[i] = c;
 			i++;
 		}
-		else {
+		else
+		{
 			fprintf(stderr, "V prikazovom subore nastala chyba: Riadok bol prilis dlhy!\n");
 			closeCommandFile(subPrikazy);
 			exit(1);
@@ -304,8 +379,6 @@ void getContent(char *array, FILE** subPrikazy) {
 	return;
 }
 
-/*funkcia "removeEOL" sluzi na odstranenie EOL na aktualnom riadku
- */
 void removeEOL(char *line) {
 	int editedLineLength;		//dlzka spojeneho riadka
 	char array[MAXchar];		//array na nacitanie nasledujucehos stringu
@@ -321,21 +394,16 @@ void removeEOL(char *line) {
 	}
 }
 
-/*funkcia "delete" nacita riadok z stdin ale nevytlaci ho
- */
 void delete(int n, char *line) {     
 				  
 	int i = 0;
-	do {
+	do{
 		getLine(line);
 		i++;
 	} while(i < n);
 	return;
 }
 
-/*funkcia "next" tlaci aktualny riadok alebo tlaci dany pocet riadkov ktore
- *dostal v argumente 
- */
 void next(int n, char *line) { 			 
 	int i = 0;							
 	do {
@@ -346,17 +414,12 @@ void next(int n, char *line) {
 	return;
 }
 
-/*funkcia prida na aktualny riadok EOL
- */
 void appendEOL(char *line){
 	char *EOL = "\n";
 	strcat(line, EOL);
 	return;
 }
 
-/*funkcia "substitution" pracuje pre prikazy s a S. V pripade prikazu "s" hlada v aktualnom
- *riadku jeden retazec "CONTENT" ak ho najde nahradi ho s "REPLACEMENT". Prikaz "S" pracuje
- *analogicky ako u prikazu "s", len substituciu vykonava pre vsetky vyskyty "CONTENT"*/
 void substitution(char *string, char *line){
 	char patternArray[MAXchar] = {'\0'};
 	char contentArray[MAXchar] = {'\0'};
@@ -371,104 +434,110 @@ void substitution(char *string, char *line){
 	unsigned i, l = 0;
 	int j = 0, k = 0, n = 0, o;
 	int indexBegRep, replacementLength, lineLength, patternLength, smallArrLenght, bigArrLength;
-/*if kontroluje ci bol zadany oddelovaci znak na mieste po prikaze (v mojom
- *pripade oddelovacie znaky su ' ' a ':') ak by tam tento znak nebol vyhodi chybu
- */
- 	if(string[2] == string[1]){
+
+	/*kontrola ci bol zadany oddelovaci znak na mieste po prikaze (v mojomoddelovacie znaky su ' ' a ':')
+ 	*ak by tam tento znak nebol vyhodi chybu*/
+ 	if(string[2] == string[1])
+ 	{
 			fprintf(stderr, "Zle zadany argument prikazu 's': PATTERN nebol zadany\n");
 			exit(1);
 		}
 		else{
-/*v cykle sa zbavime oddelovacieho znaku
- */
-			for(i = 2; i < (strlen(string)); i++){
+			/*v cykle sa zbavime oddelovacieho znaku*/
+			for(i = 2; i < (strlen(string)); i++)
+			{
 				contentArray[i - 2] = string[i];
 			}
-/*strchr nam vrati pointer na prvy vyskyt oddelovacieho znaku -> replacement pointer
- */
+			/*strchr vrati pointer na prvy vyskyt oddelovacieho znaku -> replacement pointer*/
 			replacementPtr = strchr(contentArray, string[1]);
-			if(replacementPtr == NULL){
+			if(replacementPtr == NULL)
+			{
 				fprintf(stderr, "Zle zadany argument prikazu 's': Nebol zadany REPLACEMENT\n");
 				exit(0);
 			}
-			else {
-/*v cykle ziskame iba pattern z contentarray
- */
-				while((contentArray[j]) != string[1]){	
+			else
+			{
+				/*v cykle ziskame iba pattern z contentarray*/
+				while((contentArray[j]) != string[1])
+				{	
 					patternArray[j] = contentArray[j];
 					j++;
 				}	
 			}
 		}	
-/*kedze replacement pointer zacina od oddelovacieho znaku ktory v cielovej uprave
- *nechceme tak pouzivame znova funkciu na zbavenie sa prveho znaku v retazci
- */
+	/*kedze replacement pointer zacina od oddelovacieho znaku ktory v cielovej uprave
+ 	 *nechceme tak pouzivame znova funkciu na zbavenie sa prveho znaku v retazci*/
 	removeCommandChar(replacementArray, replacementPtr);
-/*nasledne si vypocitam dlzku replacementu a aktualneho riadka
- */
+	/*nasledne si vypocitam dlzku replacementu a aktualneho riadka*/
 	replacementLength = strlen(replacementArray);
 	lineLength = strlen(line);
-/*funcia strstr nam najde vyskyt retazca v druhom retazci, vracia pointer na 
- *tento vyskyt. Ak tento vyskyt nenajde program sa vracia z funkcie a pokracuje
- *dalej
- */
+	/*funcia strstr nam najde vyskyt retazca v druhom retazci, vracia pointer na 
+ 	*tento vyskyt. Ak tento vyskyt nenajde program sa vracia z funkcie a pokracuje dalej*/
 	substitutionPtr = strstr(line, patternArray);
 
-	if (substitutionPtr == NULL){
+	if (substitutionPtr == NULL)
+	{
 		return;
 	}
 	indexBegRep = (strlen(line)) - (strlen(substitutionPtr));
 	patternLength = strlen(patternArray);
-/*v prvom cykle sa zapisuju znaky do pomocnej arrayi a to pokial sa nedostanem na index
- *patternu
- */
-	while(k < indexBegRep) {
+
+	/*v prvom cykle sa zapisuju znaky do pomocneho retazca a to pokial sa nedostanem na index
+ 	*patternu*/
+	while(k < indexBegRep) 
+	{
 		smallEditedArray[k] = line[k];
 		k++;
 	}
-/*inicializujeme si index replacementu a v tomto cykle zapisujeme do pomocnej arrayi
- *pokial sa nedostaneme na dlzku replacementu a indexu patternu
- */
+
+	/*v cykle zapisujeme do pomocneho retazca pokial sa nedostaneme na dlzku replacementu a indexu patternu*/
 	int replacementIndex = 0;
-	while(k < (replacementLength + indexBegRep)) {
+	while(k < (replacementLength + indexBegRep))
+	{
 		smallEditedArray[k] = replacementArray[replacementIndex];
 		k++;
 		replacementIndex++;
 	}
-/*inicializujeme si index poslednej casti ktora bola za CONTENTOM a v cykle cyklime 
- *pokial nedosiahneme dlzku REPLACEMENTU a LINU
- */
+	/*inicializujeme si index poslednej casti ktora bola za CONTENTOM a v cykle cyklime 
+ 	*pokial nedosiahneme dlzku REPLACEMENTU a LINU */
 	int endLineIndex = indexBegRep + patternLength;
-	while(k < (replacementLength + lineLength)) {
+	while(k < (replacementLength + lineLength))
+	{
 		smallEditedArray[k] = line[endLineIndex];
 		k++;
 		endLineIndex++;
 	}
-/*Test ci na prvej pozicii je velke S, ak hej tak substitucia pokracuje pre vsetky
- *najdene retazce "CONTENT" v aktualnom riadku*/
-	if(string[0] == 'S'){
-/*test ci nie je CONTENT a REPLACEMENT ten isty retazec, ak su rovnake tak program
- *preskoci zbytocny cyklus*/
-		if((strcmp(patternArray,replacementArray)) != 0){
+
+	/*Test ci na prvej pozicii je velke S(prikaz S), ak hej tak substitucia pokracuje pre vsetky
+ 	*najdene retazce "CONTENT" v aktualnom riadku*/
+	if(string[0] == 'S')
+	{
+		/*test ci nie je CONTENT a REPLACEMENT ten isty retazec, ak su rovnake tak program
+ 		*preskoci zbytocny cyklus*/
+		if((strcmp(patternArray,replacementArray)) != 0)
+		{
 			repSubstitutionPtr=strstr(smallEditedArray, patternArray);
-/*cyklus prehladava riadok, ak najde CONTENT nahradi ho s REPLACEMENT.Ak nahradi 
- *vseky vyskyty CONTENT tak skonci. Pre substituciu pouzivam cykli ktore som 
- *uz popisal vyssie.*/
+			/*cyklus prehladava riadok, ak najde CONTENT nahradi ho s REPLACEMENT.Ak nahradi 
+ 			*vseky vyskyty CONTENT tak skonci. Pre substituciu pouzivam cykli ktore som 
+ 			*uz popisal vyssie.*/
 			do {
 				smallArrLenght = strlen(smallEditedArray);
 				indexBegRep = (smallArrLenght) - (strlen(repSubstitutionPtr));
-				while(n < indexBegRep){
+				while(n < indexBegRep)
+				{
 					bigEditedArray[n] = smallEditedArray[n];
 					n++;
 				}
 				replacementIndex = 0;
-				while(n < (replacementLength + indexBegRep)){
+				while(n < (replacementLength + indexBegRep))
+				{
 					bigEditedArray[n] = replacementArray[replacementIndex];
 					n++;
 					replacementIndex++;
 					}
 					endLineIndex = indexBegRep + patternLength;
-				while(n < (replacementLength + smallArrLenght)){
+				while(n < (replacementLength + smallArrLenght))
+				{
 					bigEditedArray[n] = smallEditedArray[endLineIndex];
 					n++;
   					endLineIndex++;
@@ -485,30 +554,32 @@ void substitution(char *string, char *line){
 
 			}while(repSubstitutionPtr != NULL);
 		}
-		else{
+		else
+		{
 			return;
 		}
 	}
 
-	if((strlen(smallEditedArray)) < MAXchar){
-	/*v cykle prehodime z pomocnej arrayi do linu, line pre istotu pred
-	 *prepisanim vynulujeme
-	 */
-		while(l <= (strlen(smallEditedArray))){
+	if((strlen(smallEditedArray)) < MAXchar)
+	{
+		/*v cykle prehodime z pomocnej arrayi do linu*/
+		while(l <= (strlen(smallEditedArray)))
+		{
 			line[l] = '\0';
 			line[l] = smallEditedArray[l];
 			l++;
 		}
 		return;
 	}
-	else{
+	else
+	{
 		fprintf(stderr, "V prikaze nastala chyba: 'Riadok po substituci bol prilis dlhy'");
 		exit(1);
 	}
 }
 
-/*funkcia vytlaci napovedu*/
-void help() {
+void help() 
+{
 	printf("\nNAPOVEDA"
 		 "\nProgram: Projekt 1 - Prace s textem\n"
          "Autor: Marek Ziska, xziska03@stud.fit.vutbr.cz\n"
@@ -535,36 +606,28 @@ void help() {
 	return;
 }
 
-/*funkcia "commandExecution" vykonava prikazy ktore boli zadane v prikazovom subore
- */
-void commandExecution(char contentArray[MAXline][MAXchar]) {
+void commandExecution(char contentArray[MAXline][MAXchar])
+{
 	int c, d, numberOfReps;
 	char e;
 	int i = 0, j;
 	char actualLine[MAXchar] = {'\0'};
-	bool gotoFlag = false;		//boolean na zistenie ci bolo zadane n
-/*getLine nam nacita aktualny riadok
- */
-	getLine(actualLine);
-/*cyklus nam cykli pokial nam nedojdu nacitane prikazy z mainu
- */
-	while(contentArray[i][0] != EOF && i <= MAXline){
-/*premmenej c priradime znak na indexe [i][0] teda vzdy znak co je prvy v riadku
- */
-		c = contentArray[i][0];
-/*ak cyklus narazi na '\0' v subore, cyklus po znaku vytlaci zvysok riadkov 
- *zo stdin ktore neboli upravene
- */
-		if (c == '\0') {
+	bool gotoFlag = false;		//kontrola ci bolo zadane n
+
+	getLine(actualLine);	/*getLine nam nacita aktualny riadok */
+	while(contentArray[i][0] != EOF && i <= MAXline)	/*cyklus pokial nam nedojdu nacitane prikazy z mainu */
+	{
+		c = contentArray[i][0];		/*premmenej c priradime znak na indexe [i][0] teda vzdy znak co je prvy v riadku */
+		if (c == '\0')				/*ak cyklus narazi na '\0' v subore, po znaku tlaci zvysok riadkov zo stdin ktore neboli upravene*/
+		{
 			puts(actualLine);		
 			while((d = fgetc(stdin)) != EOF){
 			putc(d, stdout);
 			}
 			return;
 		}
-/*nasledne pomocou switchu na premmenej c prerozdelujeme ktore prikazy sa idu vykonat
- */
-			switch(c){
+			switch(c)	/*prerozdeluje ktore prikazy budu vykonavane*/
+			{	
 				case 'a':
 					appendContent(contentArray[i], actualLine);
 					i++;
@@ -578,14 +641,12 @@ void commandExecution(char contentArray[MAXline][MAXchar]) {
 					i++;
 					break;
 				case 'd':
-/*kontrola ci je nieco v argumente prikazu 'd': ak tam nic nieje vymaze sa aktualny riadok
- *ked tam nieco bude kontroluje sa ci to je cislo ak je tak finckia isItNumber vrati dane cislo
- *naopak nam vyhodi chybu
- */
-					if (isEmpty(contentArray[i])) {
+					if (isEmpty(contentArray[i]))	/*ak v argumente 'd' nic nieje vymaze sa aktualny riadok ked tam nieco je kontroluje sa ci to je cislo*/
+					{
 						delete(0, actualLine);
 					} 
-					else {
+					else
+					{
 						numberOfReps = isItNumber(contentArray[i]);
 						if(numberOfReps > 0){
 							delete(numberOfReps, actualLine);
@@ -611,9 +672,8 @@ void commandExecution(char contentArray[MAXline][MAXchar]) {
 					i++;
 					break;
 				case 'n':
-/*tak ako pri prikaze delete tak aj tu kontrola ci je nieco v arguemente atd
- */
-					if (isEmpty(contentArray[i])) {
+					if (isEmpty(contentArray[i]))	/*ako pri prikaze delete tak aj tu kontrola ci je nieco v argumente atd*/
+					{
 						next(0, actualLine);
 					} 
 					else {
@@ -632,52 +692,60 @@ void commandExecution(char contentArray[MAXline][MAXchar]) {
 					return;
 					break;
 				case 'g':
-/*Prevencia zacyklenia: cyklus hlada ci bolo pred tym zadane n, ak hej tak pokracuje v goto
- */
 					j = i;
-					while(j >= 0){
+					while(j >= 0)	/*Prevencia zacyklenia: cyklus hlada ci bolo pred tym zadane n, ak hej tak pokracuje v goto*/
+					{
 						e = contentArray[j][0];
 						if(e == 'n'){
 							gotoFlag = true;
 						}
 						j--;
 					}
-/*kontrola ci nieco je v arguemente ak tam nic nieje vyhodi chybu, nasledne zistuje ci arguement
- *je cislo ak hej funkcia ""isItNumber vracia cislo ktore pre spravne fungovanie kontrolujeme 
- *ci je vacsie ako 0
- */
-					if(gotoFlag){
-						if (isEmpty(contentArray[i])) {
+
+					/*kontrola ci nieco je v arguemente ak tam nic nieje vyhodi chybu, nasledne zistuje ci arguement
+					 *je cislo ak hej funkcia ""isItNumber vracia cislo ktore pre spravne fungovanie kontrolujeme 
+ 					 *ci je vacsie ako 0*/
+					if(gotoFlag)
+					{
+						if (isEmpty(contentArray[i])) 
+						{
 							fprintf(stderr, "Zle zadany argument prikazu 'g': Argument prikazu 'GOTO' nebol zadany\n");
 							exit(1);
 						} 
-						else {
+						else 
+						{
 							numberOfReps = isItNumber(contentArray[i]);
 							if(numberOfReps < 0) {
 								fprintf(stderr, "Zle zadany argument prikazu 'g': Argument musi byt vacsi alebo rovny jednej'n'\n");
 								exit(1);
 							}
 						}
-						if((i + 1) > numberOfReps){
+						if((i + 1) > numberOfReps)
+						{
 							i = numberOfReps - 1;
 							break;
 						}
-						else if((i + 1) == numberOfReps){
+						else if((i + 1) == numberOfReps)
+						{
 							fprintf(stderr, "Nastala chyba: Prikaz 'GOTO' odkazuje sam na seba(nekonecny cyklus)\n");
 							exit(1);
 						}
-						else{
-							if(isEmpty(contentArray[numberOfReps])){
+						else
+						{
+							if(isEmpty(contentArray[numberOfReps]))
+							{
 								fprintf(stderr, "Nastala chyba: Prikaz GOTO odkazoval na neexistujuci prikaz\n");
 								exit(1);
 							}
-							else {
+							else
+							{
 								i = numberOfReps - 1;
 								break;
 							}
 						}
 					}
-					else{
+					else
+					{
 						fprintf(stderr, "Nastala chyba: Nekonecny cyklus\n");
 						exit(1);
 					}
@@ -695,15 +763,14 @@ void commandExecution(char contentArray[MAXline][MAXchar]) {
 		
 	}
 
-/*cyklus po znaku vytlaci zvysok riadkov z stdin ktore neboli upravene
- *ak by v prikazoch bol vytlaceny cely input program tento cyklus ignoruje
- */
-	while((d = fgetc(stdin)) != EOF){
+	/*cyklus po znaku vytlaci zvysok riadkov z stdin ktore neboli upravene
+ 	*ak by v prikazoch bol vytlaceny cely input program tento cyklus ignoruje
+ 	*/
+	while((d = fgetc(stdin)) != EOF)
+	{
 		putc(d, stdout);
 	}
-
 	return;
 }
 /*-----------------------------------FUNCTIONS---------------------------------------*/
-
 
